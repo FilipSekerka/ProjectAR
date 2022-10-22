@@ -10,7 +10,7 @@ public class Main : MonoBehaviour
     public GameObject linearPipePrefab;
     public GameObject bendPipePrefab;
 
-    public float cubeSize;
+    public float cubeSize = 0.025f;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,23 +27,11 @@ public class Main : MonoBehaviour
         int rows = map.Length;
         int cols = map[0].Length;
 
-        float planeWidth = rows * cubeSize;
-        float planeHeight = cols * cubeSize;
-
-        // planePrefab.transform.localScale = new Vector3(planeWidth, planeWidth, planeWidth);
-        // RectTransform rt = (RectTransform)planePrefab.transform;
-
-        // float planeWidth = rt.rect.width;
-        // float planeHeight = rt.rect.height;
-
-        float startX = planePrefab.transform.position.x - planeWidth;
-        float startZ = planePrefab.transform.position.z - planeHeight;
-
         for (var i = 0; i < map.Length; i++)
         {
             for (var j = 0; j < map[i].Split(" ").Length; j++) {
                 GameObject newObject = Instantiate((map[i].Split(" ")[j] == "-") ? linearPipePrefab : bendPipePrefab, planePrefab.transform);
-                newObject.transform.position = new Vector3(0.025f * i, 0.0125f, 0.025f * j);
+                newObject.transform.position = new Vector3(cubeSize * i, cubeSize/2.0f, cubeSize * j);
             }
         }
     }
@@ -67,8 +55,6 @@ public class Main : MonoBehaviour
                 if (hitGameObject.tag == "Pipes")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
-                    //TODO zmeni sa orientacia
-                    hitGameObject.GetComponent<HorizontalPipe>().inputOrientation = 5;
                 }
 
 
