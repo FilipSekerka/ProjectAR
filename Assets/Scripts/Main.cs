@@ -2,11 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class Main : MonoBehaviour
 {
 
-    public GameObject planePrefab;
+    public GameObject marker;
     public GameObject linearPipePrefab;
     public GameObject bendPipePrefab;
 
@@ -14,7 +15,17 @@ public class Main : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // string[] map = System.IO.File.ReadAllLines(@"C:\Users\Public\projects\map.txt");
+        string file = "Assets/Maps/map.txt";
+
+        if (File.Exists(file))
+        {
+            Debug.Log("MFile exists.");
+        }
+        else {
+            Debug.Log("File does not exist.");
+        }
+
+       // string[] map = File.ReadAllLines(file);
 
         string[] map = {"- - - - - - +",
                         "- + - + + - -",
@@ -24,13 +35,11 @@ public class Main : MonoBehaviour
                         "- - - - + - -",
                         "- - - + + - +"};
 
-        int rows = map.Length;
-        int cols = map[0].Length;
 
         for (var i = 0; i < map.Length; i++)
         {
             for (var j = 0; j < map[i].Split(" ").Length; j++) {
-                GameObject newObject = Instantiate((map[i].Split(" ")[j] == "-") ? linearPipePrefab : bendPipePrefab, planePrefab.transform);
+                GameObject newObject = Instantiate((map[i].Split(" ")[j] == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
                 newObject.transform.position = new Vector3(cubeSize * i, cubeSize/2.0f, cubeSize * j);
             }
         }

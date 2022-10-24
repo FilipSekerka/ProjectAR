@@ -489,7 +489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c863f0f4544c2e14d93bae8e98cbec5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  planePrefab: {fileID: 1306734836}
+  marker: {fileID: 1306734836}
   linearPipePrefab: {fileID: 2809004426676151092, guid: e95b2f60a717fcc43bcd259befc46f6e, type: 3}
   bendPipePrefab: {fileID: 8883182623831225136, guid: ffd28f0297401914da51f1b3291d36ea, type: 3}
   cubeSize: 0.1
