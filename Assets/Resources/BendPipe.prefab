@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8883182623831225141}
   - component: {fileID: 8883182623831225140}
   - component: {fileID: 8883182623831225139}
+  - component: {fileID: -37575936279313712}
   m_Layer: 0
   m_Name: BendPipe
   m_TagString: Pipes
@@ -100,6 +101,21 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-37575936279313712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8883182623831225136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd4e39c74d953f4680afb084581cce6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pipe: {fileID: 0}
+  orientation: 
+  pipeType: 
 --- !u!1 &8883182625252484512
 GameObject:
   m_ObjectHideFlags: 0
