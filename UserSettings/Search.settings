@@ -7,10 +7,10 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.DA949528" = "vuforia "
+	"last_search.DA949528" = "store"
 	"OpenInspectorPreview.DA949528" = "0"
 	"currentGroup.DA949528" = "all"
-	"last_search.EAB0C2BA" = "pipes kit"
+	"last_search.EAB0C2BA" = ""
 	"OpenInspectorPreview.EAB0C2BA" = "0"
 	"currentGroup.EAB0C2BA" = "all"
 }
@@ -59,6 +59,8 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"si"
+	"a"
 	"v"
 	"p"
 	"ass"

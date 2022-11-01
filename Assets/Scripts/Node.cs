@@ -13,6 +13,25 @@ public class Node : MonoBehaviour
     public int i;
     public int j;
 
+    public Material blueMaterial;
+    public Material whiteMaterial;
+
+    public void setBlueMaterial() 
+    {
+        
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
+
+    }
+
+    public void setWhiteMaterial()
+    {
+        GetComponent<Renderer>().material = whiteMaterial;
+
+    }
+
+
+
+
     public Orientations getNewDirection(Orientations originOrientation, bool turnAroundYAxis)
     {
         if (turnAroundYAxis)
@@ -43,14 +62,14 @@ public class Node : MonoBehaviour
     public void turnAroundYAxis()
     {
 
-        Debug.Log("old orientation: " + this.orientation[0] + ", " + this.orientation[1]);
+       // Debug.Log("old orientation: " + this.orientation[0] + ", " + this.orientation[1]);
 
         this.orientation = new List<Orientations>() {
                         getNewDirection(this.orientation[0],true),
                         getNewDirection(this.orientation[1],true),
                         };
 
-        Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
+       // Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
 
     }
 

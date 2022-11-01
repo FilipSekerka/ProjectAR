@@ -105,24 +105,28 @@ public class Main : MonoBehaviour
 
             bool wasHit = Physics.Raycast(ray.origin, ray.direction.normalized, out hit);
 
+            
+
+
             if (wasHit)
             {
                 GameObject hitGameObject = hit.transform.gameObject;
+
+                if (hitGameObject.tag == "UI")
+                {
+                    hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
+                    checkPath();
+                }
+
                 if (hitGameObject.tag == "Pipes")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     hitGameObject.GetComponent<Node>().turnAroundYAxis();
-                    Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
+                    //Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
                 }
 
 
             }
-        }
-
-        //kontrola cesty
-        if (Input.GetMouseButtonDown(1))
-        {
-            checkPath();
         }
     }
 
@@ -136,20 +140,32 @@ public class Main : MonoBehaviour
 
         Debug.Log("vysledok prehladavania: " + result);
 
+        for (var i = 0; i < this.mapSize; i++)
+        {
+            for (var j = 0; j < this.mapSize; j++)
+            {
+                if (visited[i, j])
+                {
+                    this.nodes[i, j].setBlueMaterial();
+                }
+            }
+        }
+
 
     }
 
     bool DFSUtil(int i, int j, bool[,] visited)
     {
 
+        visited[i, j] = true;
+        Debug.Log("visited: (" + i + ", " + j + ")");
 
         if ((i == (mapSize - 1)) && (j == (mapSize - 1)))
         {
             return true;
         }
 
-        visited[i, j] = true;
-        Debug.Log("visited: (" + i + ", " + j + ")");
+        
 
         List<List<int>> neighbours = getNeighbours(i, j);
 
