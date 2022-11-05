@@ -15,6 +15,20 @@ public class Node : MonoBehaviour
 
     public Material blueMaterial;
     public Material whiteMaterial;
+    public Material outputMaterial;
+
+    private Color pipeColor;
+
+    void Update()
+    {
+        float distanceFromCamera = getDistanceFromCamera();
+        // Debug.Log(distanceFromCamera);
+        pipeColor = transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color;
+        pipeColor.a = Mathf.Pow(distanceFromCamera, 1.2f);
+
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color = pipeColor;
+
+    }
 
     public void setBlueMaterial() 
     {
@@ -25,11 +39,14 @@ public class Node : MonoBehaviour
 
     public void setWhiteMaterial()
     {
-        GetComponent<Renderer>().material = whiteMaterial;
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = whiteMaterial;
 
     }
 
-
+    public void setOutputMaterial()
+    {
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
+    }
 
 
     public Orientations getNewDirection(Orientations originOrientation, bool turnAroundYAxis)
@@ -79,4 +96,10 @@ public class Node : MonoBehaviour
 
     }
 
+    public float getDistanceFromCamera()
+    {
+        return Vector3.Distance(Camera.main.transform.position, transform.position);
+    } 
+
 }
+

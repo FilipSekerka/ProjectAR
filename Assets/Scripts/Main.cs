@@ -27,6 +27,8 @@ public class Main : MonoBehaviour
         Down
     }
 
+    private bool isValveOpen = false;
+    private string[] map;
 
     void Start()
     {
@@ -59,19 +61,21 @@ public class Main : MonoBehaviour
 
         float offset = (map.Length * cubeSize) / 2.0f;
 
+        this.map = map;
         this.mapSize = map.Length;
 
         this.nodes = new Node[map.Length, map.Length];
 
 
         for (var i = 0; i < map.Length; i++)
-        {
-            for (var j = 0; j < map[i].Split(" ").Length; j++)
+        {   
+            var rowLength = map[i].Split(" ").Length;
+
+            for (var j = 0; j < rowLength; j++)
             {
                 var pipeType = map[i].Split(" ")[j];
                 GameObject newObject = Instantiate((pipeType == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
                 newObject.transform.position = new Vector3((cubeSize * j), cubeSize / 2.0f, -(cubeSize * i));
-
 
                 if (pipeType == "-")
                 {
@@ -89,6 +93,8 @@ public class Main : MonoBehaviour
                 nodes[i, j] = newObject.GetComponent<Node>();
             }
         }
+
+        resetWaterFlow();
     }
 
 
@@ -105,24 +111,27 @@ public class Main : MonoBehaviour
 
             bool wasHit = Physics.Raycast(ray.origin, ray.direction.normalized, out hit);
 
-            
-
-
             if (wasHit)
             {
                 GameObject hitGameObject = hit.transform.gameObject;
 
+                resetWaterFlow();
                 if (hitGameObject.tag == "UI")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
+                    isValveOpen = !isValveOpen;
+                    
                     checkPath();
                 }
 
                 if (hitGameObject.tag == "Pipes")
-                {
+                {   
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     hitGameObject.GetComponent<Node>().turnAroundYAxis();
                     //Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
+                    if (isValveOpen) {
+                        checkPath();
+                    }
                 }
 
 
@@ -145,8 +154,11 @@ public class Main : MonoBehaviour
             for (var j = 0; j < this.mapSize; j++)
             {
                 if (visited[i, j])
-                {
-                    this.nodes[i, j].setBlueMaterial();
+                {   
+                    if (this.isValveOpen)
+                    {
+                        this.nodes[i, j].setBlueMaterial();
+                    }
                 }
             }
         }
@@ -256,6 +268,28 @@ public class Main : MonoBehaviour
         }
 
         return neighbours;
+    }
+
+    void resetWaterFlow() 
+    {
+        for (int i = 0; i < this.map.Length; i++)
+        {
+            var rowLength = this.map[i].Split(" ").Length;
+            for (int j = 0; j < rowLength; j++)
+            {
+                
+                if (i == 0 && j == 0) 
+                {
+                    this.nodes[i, j].GetComponent<Node>().setBlueMaterial();
+                } else if (i == this.map.Length - 1 && j == rowLength - 1)
+                {
+                    this.nodes[i, j].GetComponent<Node>().setOutputMaterial();
+                } else 
+                {
+                    this.nodes[i, j].GetComponent<Node>().setWhiteMaterial();
+                }
+            }
+        }
     }
 
 }
