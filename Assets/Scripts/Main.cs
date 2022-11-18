@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-
+using Threading;
 public class Main : MonoBehaviour
 {
 
@@ -29,6 +29,7 @@ public class Main : MonoBehaviour
 
     private bool isValveOpen = false;
     private string[] map;
+    private bool isLocked = false;
 
     void Start()
     {
@@ -130,13 +131,67 @@ public class Main : MonoBehaviour
                     hitGameObject.GetComponent<Node>().turnAroundYAxis();
                     //Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
                     if (isValveOpen) {
-                        checkPath();
+
+                        if (this.isLocked)
+                        {
+                            Debug.Log("Backround computation in progress");
+                        }
+                        else {
+                            checkPath();
+                            this.isLocked = true;
+                            WaitAndReportValue();
+                        }
+
+                        
+
+
                     }
                 }
 
 
             }
         }
+    }
+
+
+    private void WaitAndReportValue()
+    {
+        Async.Run(() =>
+        {
+            FindPrimeNumber(2000000);
+          
+        }).ContinueInMainThread(() =>
+        {
+            this.isLocked = false;
+        });
+    }
+
+    void FindPrimeNumber(int n)
+    {
+        Debug.Log("computation started");
+        int count = 0;
+        long a = 2;
+        while (count < n)
+        {
+            long b = 2;
+            int prime = 1;// to check if found a prime
+            while (b * b <= a)
+            {
+                if (a % b == 0)
+                {
+                    prime = 0;
+                    break;
+                }
+                b++;
+            }
+            if (prime > 0)
+            {
+                count++;
+            }
+            a++;
+        }
+        Debug.Log("computation finished");
+        Debug.Log("count: " + count);
     }
 
 
