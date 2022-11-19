@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using Threading;
+using System.Threading;
+
 public class Main : MonoBehaviour
 {
 
@@ -29,7 +30,9 @@ public class Main : MonoBehaviour
 
     private bool isValveOpen = false;
     private string[] map;
-    private bool isLocked = false;
+    private bool clickingIsLocked = false;
+    private bool[,] lastVisited = new bool[1, 1];
+    private bool colorThePipesInNextFrame = false;
 
     void Start()
     {
@@ -69,7 +72,7 @@ public class Main : MonoBehaviour
 
 
         for (var i = 0; i < map.Length; i++)
-        {   
+        {
             var rowLength = map[i].Split(" ").Length;
 
             for (var j = 0; j < rowLength; j++)
@@ -102,9 +105,22 @@ public class Main : MonoBehaviour
     void Update()
     {
 
+        if (this.colorThePipesInNextFrame)
+        {
+            ColorThePipes();
+            this.colorThePipesInNextFrame = false;
+            this.clickingIsLocked = false;
+        }
+
         //otacanie
         if (Input.GetMouseButtonDown(0))
         {
+
+            if (this.clickingIsLocked)
+            {
+                Debug.Log("Background computation in progress");
+                return;
+            }
 
             RaycastHit hit;
             Camera cam = Camera.main;
@@ -121,30 +137,23 @@ public class Main : MonoBehaviour
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
-                    
-                    checkPath();
+
+                    this.clickingIsLocked = true;
+                    Thread t = new Thread(compute);
+                    t.Start();
                 }
 
                 if (hitGameObject.tag == "Pipes")
-                {   
+                {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     hitGameObject.GetComponent<Node>().turnAroundYAxis();
-                    //Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
-                    if (isValveOpen) {
 
-                        if (this.isLocked)
-                        {
-                            Debug.Log("Backround computation in progress");
-                        }
-                        else {
-                            checkPath();
-                            this.isLocked = true;
-                            WaitAndReportValue();
-                        }
+                    if (isValveOpen)
+                    {
 
-                        
-
-
+                        this.clickingIsLocked = true;
+                        Thread t = new Thread(compute);
+                        t.Start();
                     }
                 }
 
@@ -153,28 +162,25 @@ public class Main : MonoBehaviour
         }
     }
 
-
-    private void WaitAndReportValue()
+    private void compute()
     {
-        Async.Run(() =>
-        {
-            FindPrimeNumber(2000000);
-          
-        }).ContinueInMainThread(() =>
-        {
-            this.isLocked = false;
-        });
+        Debug.Log("Computation started.");
+        FindPrimeNumber(500000);
+        checkPath();
+        Debug.Log("Computation finished.");
+
     }
 
+
+    //na spomalenie CPU
     void FindPrimeNumber(int n)
     {
-        Debug.Log("computation started");
         int count = 0;
         long a = 2;
         while (count < n)
         {
             long b = 2;
-            int prime = 1;// to check if found a prime
+            int prime = 1;
             while (b * b <= a)
             {
                 if (a % b == 0)
@@ -190,8 +196,6 @@ public class Main : MonoBehaviour
             }
             a++;
         }
-        Debug.Log("computation finished");
-        Debug.Log("count: " + count);
     }
 
 
@@ -202,14 +206,22 @@ public class Main : MonoBehaviour
 
         bool result = DFSUtil(0, 0, visited);
 
+        this.lastVisited = visited;
+        this.colorThePipesInNextFrame = true;
+
         Debug.Log("vysledok prehladavania: " + result);
 
-        for (var i = 0; i < this.mapSize; i++)
+
+    }
+
+    void ColorThePipes()
+    {
+        for (var i = 0; i < this.lastVisited.GetLength(0); i++)
         {
-            for (var j = 0; j < this.mapSize; j++)
+            for (var j = 0; j < this.lastVisited.GetLength(1); j++)
             {
-                if (visited[i, j])
-                {   
+                if (this.lastVisited[i, j])
+                {
                     if (this.isValveOpen)
                     {
                         this.nodes[i, j].setBlueMaterial();
@@ -217,22 +229,20 @@ public class Main : MonoBehaviour
                 }
             }
         }
-
-
     }
 
     bool DFSUtil(int i, int j, bool[,] visited)
     {
 
         visited[i, j] = true;
-        Debug.Log("visited: (" + i + ", " + j + ")");
+        //Debug.Log("visited: (" + i + ", " + j + ")");
 
         if ((i == (mapSize - 1)) && (j == (mapSize - 1)))
         {
             return true;
         }
 
-        
+
 
         List<List<int>> neighbours = getNeighbours(i, j);
 
@@ -325,21 +335,23 @@ public class Main : MonoBehaviour
         return neighbours;
     }
 
-    void resetWaterFlow() 
+    void resetWaterFlow()
     {
         for (int i = 0; i < this.map.Length; i++)
         {
             var rowLength = this.map[i].Split(" ").Length;
             for (int j = 0; j < rowLength; j++)
             {
-                
-                if (i == 0 && j == 0) 
+
+                if (i == 0 && j == 0)
                 {
                     this.nodes[i, j].GetComponent<Node>().setBlueMaterial();
-                } else if (i == this.map.Length - 1 && j == rowLength - 1)
+                }
+                else if (i == this.map.Length - 1 && j == rowLength - 1)
                 {
                     this.nodes[i, j].GetComponent<Node>().setOutputMaterial();
-                } else 
+                }
+                else
                 {
                     this.nodes[i, j].GetComponent<Node>().setWhiteMaterial();
                 }
