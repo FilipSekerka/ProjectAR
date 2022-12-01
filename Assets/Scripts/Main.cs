@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEngine.EventSystems;
 
 public class Main : MonoBehaviour
 {
@@ -104,6 +105,13 @@ public class Main : MonoBehaviour
         //otacanie
         if (Input.GetMouseButtonDown(0))
         {
+
+
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                Debug.Log("kliknutie na GUI");
+                return;
+            }
 
             RaycastHit hit;
             Camera cam = Camera.main;
