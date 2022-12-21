@@ -12,7 +12,7 @@ public class Main : MonoBehaviour
 
     public static Main Instance { get; private set; }
 
-    private void Awake()    //Singleton
+    private void Awake()
     {
         if (Instance == null)
         {
@@ -196,14 +196,12 @@ public class Main : MonoBehaviour
 
                     if (this.turnAroundY)
                     {
-                        //hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
-                        hitGameObject.transform.localEulerAngles += new Vector3(0, 90.0f, 0);
+                        hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                         //hitGameObject.GetComponent<Node>().turnAroundYAxis();
                     }
                     else
                     {
-                        ////hitGameObject.transform.Rotate(new Vector3(90.0f, 0, 0));
-                        hitGameObject.transform.localEulerAngles += new Vector3(90.0f, 0, 0);
+                        hitGameObject.transform.Rotate(new Vector3(90.0f, 0, 0));
                         //hitGameObject.GetComponent<Node>().turnAroundXAxis();
                     }
 
