@@ -935,8 +935,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   marker: {fileID: 1306734836}
-  linearPipePrefab: {fileID: 2809004426676151092, guid: e95b2f60a717fcc43bcd259befc46f6e, type: 3}
-  bendPipePrefab: {fileID: 8883182623831225136, guid: ffd28f0297401914da51f1b3291d36ea, type: 3}
+  linearPipePrefab: {fileID: 8883182623831225136, guid: 0246e56f1dcd0ef4090d2169146dd80c, type: 3}
+  bendPipePrefab: {fileID: 8883182623831225136, guid: 6abbedeaddb2f4f46aa7fe1a2b26f915, type: 3}
   cubeSize: 0.1
   turnAroundY: 1
 --- !u!114 &1306734842
@@ -1071,7 +1071,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -444.6, y: 223}
+  m_AnchoredPosition: {x: -444.6, y: 245.4}
   m_SizeDelta: {x: 100, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1686691379

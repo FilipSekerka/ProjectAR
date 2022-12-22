@@ -86,10 +86,7 @@ public class Main : MonoBehaviour
         string[,,] inputMap =
             {
                 {
-                    {"-","+","-","+"},
-                    {"-","-","-","-"},
-                    {"-","-","-","-"},
-                    {"-","+","-","-"},
+                    {"-","+"},
                 },
                 //{
                 //    {"-","+","-","+"},
@@ -143,6 +140,38 @@ public class Main : MonoBehaviour
         //resetWaterFlow();
     }
 
+    Vector3 calibrateEulerAngles(Vector3 angles)
+    {
+        Vector3 newAngles = Vector3.zero;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (angles[i] > 70.0 && angles[i] < 100.0f)
+            {
+                newAngles[i] = 90.0f;
+            }
+            else if (angles[i] > 170.0f && angles[i] < 190.0f)
+            {
+                newAngles[i] = 180.0f;
+            }
+            else if (angles[i] > 260.0f && angles[i] < 280.0f)
+            {
+                newAngles[i] = 270.0f;
+            }
+            else if (angles[i] > 350.0f && angles[i] < 360.0f)
+            {
+                newAngles[i] = 360.0f;
+            }
+            else if (angles[i] > 0.0f && angles[i] < 10.0f)
+            {
+                newAngles[i] = 0.0f;
+            }
+
+        }
+
+        return newAngles;
+    }
+
 
     void Update()
     {
@@ -193,19 +222,35 @@ public class Main : MonoBehaviour
 
                 if (hitGameObject.tag == "Pipes")
                 {
+                    //Debug.Log("parent rotation: " + hitGameObject.transform.localEulerAngles);
+                    //Debug.Log("container rotation: " + hitGameObject.transform.GetChild(0).localEulerAngles);
+                    //Debug.Log("pipe rotation: " + hitGameObject.transform.GetChild(0).GetChild(0).localEulerAngles);
 
                     if (this.turnAroundY)
                     {
-                        hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
+                        //hitGameObject.transform.position = hitGameObject.GetComponent<Node>().originalPosition;
+                        //Vector3 parentPosition = hitGameObject.GetComponent<Node>().originalPosition;
+                        Vector3 parentPosition = hitGameObject.transform.position;
+                        hitGameObject.transform.GetChild(0).RotateAround(parentPosition, new Vector3(0, 1, 0), 90.0f);
+                        //hitGameObject.transform.GetChild(0).Rotate(0, 90.0f, 0, Space.Self);
                         //hitGameObject.GetComponent<Node>().turnAroundYAxis();
                     }
                     else
                     {
-                        hitGameObject.transform.Rotate(new Vector3(90.0f, 0, 0));
+                        //hitGameObject.transform.position = hitGameObject.GetComponent<Node>().originalPosition;
+                        //Vector3 parentPosition = hitGameObject.GetComponent<Node>().originalPosition;
+                        Vector3 parentPosition = hitGameObject.transform.position;
+                        hitGameObject.transform.GetChild(0).RotateAround(parentPosition, new Vector3(1, 0, 0), 90.0f);
+                        //hitGameObject.transform.GetChild(0).Rotate(new Vector3(1, 0, 0), 90.0f);
+                        //hitGameObject.transform.GetChild(0).Rotate(90.0F, 0, 0, Space.Self);
                         //hitGameObject.GetComponent<Node>().turnAroundXAxis();
                     }
 
 
+
+                    Debug.Log("container rotaion before calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
+                    hitGameObject.transform.GetChild(0).localEulerAngles = calibrateEulerAngles(hitGameObject.transform.GetChild(0).localEulerAngles);
+                    Debug.Log("container rotaion after calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
 
                     if (isValveOpen)
                     {
