@@ -97,7 +97,7 @@ public class Node : MonoBehaviour
                         getNewDirection(this.orientation[0],true),
                         getNewDirection(this.orientation[1],true),
                         };
-        // Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
+        Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
     }
 
     public void turnAroundXAxis()
@@ -106,6 +106,7 @@ public class Node : MonoBehaviour
                         getNewDirection(this.orientation[0],false),
                         getNewDirection(this.orientation[1],false),
                         };
+        Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
     }
 
     public float getDistanceFromCamera()

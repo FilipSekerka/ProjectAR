@@ -22,7 +22,7 @@ public class Main : MonoBehaviour
         {
             Destroy(gameObject);
         }
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
     }
 
 
@@ -61,43 +61,8 @@ public class Main : MonoBehaviour
 
     void Start()
     {
-        /* string file = "Assets/Maps/map.txt";
 
-         if (File.Exists(file))
-         {
-             Debug.Log("MFile exists.");
-         }
-         else
-         {
-             Debug.Log("File does not exist.");
-         }
-
-         string[] map = File.ReadAllLines(file);
-        */
-
-        //string[] map = {"- - - - - - +",
-        //                "- + - + + - -",
-        //                "- - - + - - -",
-        //                "- - - - - - -",
-        //                "- + - - - + -",
-        //                "- - - - + - -",
-        //                "- - - + + - +"};
-
-        string[,,] inputMap =
-            {
-                {
-                    {"-","+"},
-                },
-                //{
-                //    {"-","+","-","+"},
-                //    {"-","-","-","-"},
-                //    {"-","-","-","-"},
-                //    {"-","+","-","-"},
-                //}
-        };
-
-
-        this.map = inputMap;
+        this.map = LevelSettings.getMap();
 
         this.mapHeight = this.map.GetLength(0);
         this.mapRows = this.map.GetLength(1);
@@ -146,7 +111,7 @@ public class Main : MonoBehaviour
 
         for (int i = 0; i < 3; i++)
         {
-            if (angles[i] > 70.0 && angles[i] < 100.0f)
+            if (angles[i] > 80.0 && angles[i] < 100.0f)
             {
                 newAngles[i] = 90.0f;
             }
@@ -158,11 +123,11 @@ public class Main : MonoBehaviour
             {
                 newAngles[i] = 270.0f;
             }
-            else if (angles[i] > 350.0f && angles[i] < 360.0f)
+            else if (angles[i] > 350.0f && angles[i] <= 360.0f)
             {
-                newAngles[i] = 360.0f;
+                newAngles[i] = 0.0f;
             }
-            else if (angles[i] > 0.0f && angles[i] < 10.0f)
+            else if (angles[i] >= 0.0f && angles[i] < 10.0f)
             {
                 newAngles[i] = 0.0f;
             }
@@ -226,31 +191,27 @@ public class Main : MonoBehaviour
                     //Debug.Log("container rotation: " + hitGameObject.transform.GetChild(0).localEulerAngles);
                     //Debug.Log("pipe rotation: " + hitGameObject.transform.GetChild(0).GetChild(0).localEulerAngles);
 
+                    //Debug.Log("container rotaion before calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
+                    //hitGameObject.transform.GetChild(0).localEulerAngles = calibrateEulerAngles(hitGameObject.transform.GetChild(0).localEulerAngles);
+                    //Debug.Log("container rotaion after calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
+
+
                     if (this.turnAroundY)
                     {
-                        //hitGameObject.transform.position = hitGameObject.GetComponent<Node>().originalPosition;
-                        //Vector3 parentPosition = hitGameObject.GetComponent<Node>().originalPosition;
                         Vector3 parentPosition = hitGameObject.transform.position;
                         hitGameObject.transform.GetChild(0).RotateAround(parentPosition, new Vector3(0, 1, 0), 90.0f);
-                        //hitGameObject.transform.GetChild(0).Rotate(0, 90.0f, 0, Space.Self);
-                        //hitGameObject.GetComponent<Node>().turnAroundYAxis();
+                        hitGameObject.GetComponent<Node>().turnAroundYAxis();
                     }
                     else
                     {
-                        //hitGameObject.transform.position = hitGameObject.GetComponent<Node>().originalPosition;
-                        //Vector3 parentPosition = hitGameObject.GetComponent<Node>().originalPosition;
                         Vector3 parentPosition = hitGameObject.transform.position;
                         hitGameObject.transform.GetChild(0).RotateAround(parentPosition, new Vector3(1, 0, 0), 90.0f);
-                        //hitGameObject.transform.GetChild(0).Rotate(new Vector3(1, 0, 0), 90.0f);
-                        //hitGameObject.transform.GetChild(0).Rotate(90.0F, 0, 0, Space.Self);
-                        //hitGameObject.GetComponent<Node>().turnAroundXAxis();
+                        hitGameObject.GetComponent<Node>().turnAroundXAxis();
                     }
 
 
-
-                    Debug.Log("container rotaion before calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
                     hitGameObject.transform.GetChild(0).localEulerAngles = calibrateEulerAngles(hitGameObject.transform.GetChild(0).localEulerAngles);
-                    Debug.Log("container rotaion after calibration: " + hitGameObject.transform.GetChild(0).localEulerAngles);
+
 
                     if (isValveOpen)
                     {

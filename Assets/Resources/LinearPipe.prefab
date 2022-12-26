@@ -115,6 +115,7 @@ MonoBehaviour:
   pipeType: 
   i: 0
   j: 0
+  k: 0
   blueMaterial: {fileID: 2100000, guid: a6af44a6b6a48064e9aff88d767d2009, type: 2}
   whiteMaterial: {fileID: 2100000, guid: 45ed70bab4eb11e47bfd2d753f7dc98f, type: 2}
   outputMaterial: {fileID: 2100000, guid: b6c618c30041cae448cf88a266ca06e2, type: 2}
@@ -127,7 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2809004426718604903}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: pipe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -161,7 +162,7 @@ GameObject:
   - component: {fileID: 2809004427194539020}
   - component: {fileID: 2809004427194539010}
   - component: {fileID: 2809004427194539011}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
