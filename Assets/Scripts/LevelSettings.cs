@@ -1,10 +1,14 @@
+using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class LevelSettings : MonoBehaviour
 {
     public static LevelSettings Instance { get; private set; }
+    private static List<List<List<string[]>>> maps = new List<List<List<string[]>>>();
 
     private void Awake()
     {
@@ -20,82 +24,49 @@ public class LevelSettings : MonoBehaviour
     }
 
 
-    private static string[,,] map1 =
-            {
-                {
-                    {"-","+"},
-                    {"-","+"},
-                },
+    private static int actualLevel = 0;
 
-        };
-
-    private static string[,,] map2 =
-         {
-                {
-                    {"-","+"},
-                    {"-","+"},
-                },
-                 {
-                    {"-","+"},
-                    {"-","+"},
-                },
-
-        };
-
-    private static string[,,] map3 =
-         {
-                {
-                    {"-","+","-","+"},
-                    {"-","+","-","+"},
-                },
-                 {
-                    {"-","+","-","+"},
-                    {"-","+","-","+"},
-                },
-
-        };
-
-
-    private static Level actualLevel = Level.Level1;
-
-
-
-    public enum Level
+    public void setLevel(int level) 
     {
-        Level1,
-        Level2,
-        Level3
+        actualLevel = level;
     }
 
-
-    public void setLevel1()
+    public List<List<string[]>> getMap()
     {
-        actualLevel = Level.Level1;
+        return LevelSettings.maps[actualLevel];
     }
 
-    public void setLevel2()
+    public List<List<List<string[]>>> loadMaps()
     {
-        actualLevel = Level.Level2;
-    }
-
-    public void setLevel3()
-    {
-        actualLevel = Level.Level3;
-    }
-
-    public static string[,,] getMap()
-    {
-        switch (actualLevel)
+        maps = new List<List<List<string[]>>>();
+        string[] fileEntries = Directory.GetFiles("./Assets/Resources/");
+        Array.Sort(fileEntries, (x,y) => String.Compare(x, y));
+        
+        foreach(string fileEntry in fileEntries) 
         {
-            case Level.Level1:
-                return LevelSettings.map1;
-            case Level.Level2:
-                return LevelSettings.map2;
-            case Level.Level3:
-                return LevelSettings.map3;
-            default:
-                return LevelSettings.map1;
+            
+            if (fileEntry.EndsWith(".txt"))
+            {
+                print(fileEntry);
+                List<List<string[]>> map = new List<List<string[]>>();
+                List<string[]> floor = new List<string[]>();
 
+                foreach (string line in System.IO.File.ReadLines(fileEntry))
+                {  
+                    string[] row = line.Split(" ");
+                   
+                    if (row.GetValue(0).ToString() != ";")
+                    {
+                        floor.Add(row);
+                    } else {
+                        map.Add(floor);
+                        floor = new List<string[]>();
+                    }
+                }  
+
+                maps.Add(map);
+            }
         }
+        return maps;
     }
 }

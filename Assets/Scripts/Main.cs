@@ -50,7 +50,7 @@ public class Main : MonoBehaviour
     }
 
     private bool isValveOpen = false;
-    private string[,,] map;
+    private List<List<string[]>> map;
     private bool clickingIsLocked = false;
     private bool[,] lastVisited = new bool[1, 1];
     private bool colorThePipesInNextFrame = false;
@@ -61,13 +61,11 @@ public class Main : MonoBehaviour
 
     void Start()
     {
-
-        this.map = LevelSettings.getMap();
-
-        this.mapHeight = this.map.GetLength(0);
-        this.mapRows = this.map.GetLength(1);
-        this.mapCols = this.map.GetLength(2);
-
+        this.map = LevelSettings.Instance.getMap();
+        this.mapHeight = this.map.Count;
+        this.mapRows = this.map[0].Count;
+        this.mapCols = this.map[0][0].Length;
+        print($"{this.mapHeight}, {this.mapRows}, {this.mapCols}");
         this.nodes = new Node[this.mapHeight, this.mapRows, this.mapCols];
 
 
@@ -77,7 +75,7 @@ public class Main : MonoBehaviour
             {
                 for (int k = 0; k < this.mapCols; k++)
                 {
-                    string pipeType = map[i, j, k];
+                    string pipeType = map[i][j][k];
 
                     GameObject newObject = Instantiate((pipeType == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
                     newObject.transform.position = new Vector3((cubeSize * j), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * k));
