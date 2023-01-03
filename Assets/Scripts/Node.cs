@@ -14,12 +14,6 @@ public class Node : MonoBehaviour
     public int j;
     public int k;
 
-    private float[] angles = {0.0f, 90.0f, 180.0f, 270.0f};
-
-    private int xAxisIndex = 0;
-    private int yAxisIndex = 0;
-    private int zAxisInde = 0;
-
     public Material blueMaterial;
     public Material whiteMaterial;
     public Material outputMaterial;

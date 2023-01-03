@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using System.Threading;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 public class Main : MonoBehaviour
 {
@@ -35,12 +36,6 @@ public class Main : MonoBehaviour
     public Node[,,] nodes;
 
     public Node selectedNode = null;
-
-    private float[] angles = {0.0f, 90.0f, 180.0f, 270.0f};
-
-    private int xAxisIndex = 0;
-    private int yAxisIndex = 0;
-    private int zAxisInde = 0;
 
     public enum Orientations
     {
@@ -106,39 +101,6 @@ public class Main : MonoBehaviour
         //resetWaterFlow();
     }
 
-    //Vector3 calibrateEulerAngles(Vector3 angles)
-    //{
-    //    Vector3 newAngles = Vector3.zero;
-
-    //    for (int i = 0; i < 3; i++)
-    //    {
-    //        if (angles[i] > 80.0 && angles[i] < 100.0f)
-    //        {
-    //            newAngles[i] = 90.0f;
-    //        }
-    //        else if (angles[i] > 170.0f && angles[i] < 190.0f)
-    //        {
-    //            newAngles[i] = 180.0f;
-    //        }
-    //        else if (angles[i] > 260.0f && angles[i] < 280.0f)
-    //        {
-    //            newAngles[i] = 270.0f;
-    //        }
-    //        else if (angles[i] > 350.0f && angles[i] <= 360.0f)
-    //        {
-    //            newAngles[i] = 0.0f;
-    //        }
-    //        else if (angles[i] >= 0.0f && angles[i] < 10.0f)
-    //        {
-    //            newAngles[i] = 0.0f;
-    //        }
-
-    //    }
-
-    //    return newAngles;
-    //}
-
-
     void Update()
     {
 
@@ -164,18 +126,20 @@ public class Main : MonoBehaviour
             }
 
 
-            RaycastHit hit;
+            RaycastHit[] hits;
             Camera cam = Camera.main;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-            bool wasHit = Physics.Raycast(ray.origin, ray.direction.normalized, out hit);
+            hits = Physics.RaycastAll(ray.origin, ray.direction.normalized, 100.0F);
+            RaycastHit[] activeHits = Array.FindAll(hits, hit => hit.transform.gameObject.transform.GetChild(0).gameObject.activeSelf);
+            activeHits.OrderByDescending(hit => hit.transform.gameObject.GetComponent<Node>().getDistanceFromCamera());
+            if (activeHits.Length > 0) {
 
-            if (wasHit)
-            {
+                RaycastHit hit = activeHits.First();
                 GameObject hitGameObject = hit.transform.gameObject;
 
                 //resetWaterFlow();
-                if (hitGameObject.tag == "UI") //Tento UI tag premenovat, lebo nie je to UI
+                if (hitGameObject.tag == "Valve")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
@@ -198,10 +162,6 @@ public class Main : MonoBehaviour
                         this.selectedNode = clickedNode;
                     }
 
-                    // hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 90.0f));
-                    // hitGameObject.GetComponent<Node>().turnAroundYAxis();
-
-
                     if (isValveOpen)
                     {
 
@@ -211,8 +171,8 @@ public class Main : MonoBehaviour
                     }
                 }
 
-
             }
+
         }
     }
 
