@@ -34,10 +34,13 @@ public class Main : MonoBehaviour
 
     public Node[,,] nodes;
 
-    public bool turnAroundY = true;
+    public Node selectedNode = null;
 
-    public void onToggleClicked() { }
+    private float[] angles = {0.0f, 90.0f, 180.0f, 270.0f};
 
+    private int xAxisIndex = 0;
+    private int yAxisIndex = 0;
+    private int zAxisInde = 0;
 
     public enum Orientations
     {
@@ -157,7 +160,6 @@ public class Main : MonoBehaviour
 
             if (EventSystem.current.IsPointerOverGameObject())
             {
-                Debug.Log("kliknutie na GUI");
                 return;
             }
 
@@ -184,35 +186,26 @@ public class Main : MonoBehaviour
                 }
 
                 if (hitGameObject.tag == "Pipes")
-                {
-
-                    if (this.turnAroundY)
-                    {
-
-                        //hitGameObject.transform.GetChild(0).Rotate(0, 90.0f, 0);
-                        //Vector3 oldRotation = hitGameObject.transform.GetChild(0).localEulerAngles;
-                        //Vector3 newRotation = oldRotation + new Vector3(90.0f, 0, 0);
-                        //hitGameObject.transform.GetChild(0).localEulerAngles = newRotation;
-
-                        hitGameObject.transform.RotateAround(hitGameObject.transform.position, new Vector3(0, 1, 0), 90.0f);
-                        hitGameObject.GetComponent<Node>().turnAroundYAxis();
+                {   
+                    if (this.selectedNode != null) {
+                        this.selectedNode.unselect();
                     }
-                    else
-                    {
-                        //hitGameObject.transform.GetChild(0).Rotate(90.0f, 0, 0);
-                        //Vector3 oldRotation = hitGameObject.transform.GetChild(0).localEulerAngles;
-                        //Vector3 newRotation = oldRotation + new Vector3(0, 90.0f, 0);
-                        //hitGameObject.transform.GetChild(0).localEulerAngles = newRotation;
 
-                        hitGameObject.transform.RotateAround(hitGameObject.transform.position, new Vector3(1, 0, 0), 90.0f);
-                        hitGameObject.GetComponent<Node>().turnAroundXAxis();
+                    Node clickedNode = hitGameObject.GetComponent<Node>();
+                    if (!clickedNode.isSelected)
+                    {
+                        clickedNode.select();
+                        this.selectedNode = clickedNode;
                     }
+
+                    // hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 90.0f));
+                    // hitGameObject.GetComponent<Node>().turnAroundYAxis();
 
 
                     if (isValveOpen)
                     {
 
-                        this.clickingIsLocked = true;
+                        // this.clickingIsLocked = true;
                         //Thread t = new Thread(compute);
                         //t.Start();
                     }

@@ -14,35 +14,63 @@ public class Node : MonoBehaviour
     public int j;
     public int k;
 
+    private float[] angles = {0.0f, 90.0f, 180.0f, 270.0f};
+
+    private int xAxisIndex = 0;
+    private int yAxisIndex = 0;
+    private int zAxisInde = 0;
+
     public Material blueMaterial;
     public Material whiteMaterial;
     public Material outputMaterial;
 
     private Color pipeColor;
 
-    //void Update()
-    //{
-    //    float distanceFromCamera = getDistanceFromCamera();
-    //    pipeColor = transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color;
-    //    pipeColor.a = Mathf.Pow(distanceFromCamera, 1.2f);
-    //    transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color = pipeColor;
-    //}
+    public bool isSelected;
 
-    //public void setBlueMaterial()
-    //{
-    //    transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
-    //}
+    void Update()
+    {
 
-    //public void setWhiteMaterial()
-    //{
-    //    transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = whiteMaterial;
-    //}
+        float distanceFromCamera = getDistanceFromCamera();
+        pipeColor = transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color;
 
-    //public void setOutputMaterial()
-    //{
-    //    transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
-    //}
+        if (distanceFromCamera < 0.4f)
+        {
+            transform.GetChild(0).gameObject.SetActive(false);
+        } else
+        {
+            transform.GetChild(0).gameObject.SetActive(true);
+            pipeColor.a = Mathf.Pow(distanceFromCamera, 2.0f);
+        }
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color = pipeColor;
+    }
 
+    public void setBlueMaterial()
+    {
+       transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
+    }
+
+    public void setWhiteMaterial()
+    {
+       transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = whiteMaterial;
+    }
+
+    public void setOutputMaterial()
+    {
+       transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
+    }
+
+    public void select()
+    {   
+        this.isSelected = true;
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
+    }
+
+    public void unselect()
+    {
+        this.isSelected = false;
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = whiteMaterial;
+    }
 
     public Orientations getNewDirection(Orientations originOrientation, bool turnAroundYAxis)
     {
@@ -88,6 +116,21 @@ public class Node : MonoBehaviour
                     return Orientations.North;
             }
         }
+    }
+
+    public void rotateX()
+    { 
+        transform.Rotate(new Vector3(90.0f, 0, 0));
+    }
+
+    public void rotateY()
+    { 
+        transform.Rotate(new Vector3(0, 90.0f, 0));
+    }
+
+    public void rotateZ()
+    { 
+        transform.Rotate(new Vector3(0, 0, 90.0f));
     }
 
     public void turnAroundYAxis()

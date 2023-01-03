@@ -46,7 +46,6 @@ public class UIController : MonoBehaviour
     }
     public void onToggleClicked()
     {
-        Main.Instance.turnAroundY = !Main.Instance.turnAroundY;
     }
 
     public void goToLevel(int level)
