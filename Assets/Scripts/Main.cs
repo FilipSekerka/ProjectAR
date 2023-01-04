@@ -50,7 +50,7 @@ public class Main : MonoBehaviour
     private bool isValveOpen = false;
     private List<List<string[]>> map;
     private bool clickingIsLocked = false;
-    private bool[,] lastVisited = new bool[1, 1];
+    private bool[,,] lastVisited = new bool[1, 1, 1];
     private bool colorThePipesInNextFrame = false;
 
     private int mapHeight = 0;
@@ -76,7 +76,7 @@ public class Main : MonoBehaviour
                     string pipeType = map[i][j][k];
 
                     GameObject newObject = Instantiate((pipeType == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
-                    newObject.transform.position = new Vector3((cubeSize * j), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * k));
+                    newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
 
                     if (pipeType == "-")
                     {
@@ -98,7 +98,7 @@ public class Main : MonoBehaviour
 
         }
 
-        //resetWaterFlow();
+        resetWaterFlow();
     }
 
     void Update()
@@ -106,7 +106,7 @@ public class Main : MonoBehaviour
 
         if (this.colorThePipesInNextFrame)
         {
-            //ColorThePipes();
+            ColorThePipes();
             this.colorThePipesInNextFrame = false;
             this.clickingIsLocked = false;
         }
@@ -131,27 +131,31 @@ public class Main : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
             hits = Physics.RaycastAll(ray.origin, ray.direction.normalized, 100.0F);
-            RaycastHit[] activeHits = Array.FindAll(hits, hit => hit.transform.gameObject.transform.GetChild(0).gameObject.activeSelf);
+            print(hits[0].transform.childCount);
+            print(hits.Length);
+            RaycastHit[] activeHits = Array.FindAll(hits, hit => hit.transform.GetChild(0).gameObject.activeSelf);
             activeHits.OrderByDescending(hit => hit.transform.gameObject.GetComponent<Node>().getDistanceFromCamera());
-            if (activeHits.Length > 0) {
+            if (activeHits.Length > 0)
+            {
 
                 RaycastHit hit = activeHits.First();
                 GameObject hitGameObject = hit.transform.gameObject;
 
-                //resetWaterFlow();
+                resetWaterFlow();
                 if (hitGameObject.tag == "Valve")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
 
-                    //this.clickingIsLocked = true;
-                    //Thread t = new Thread(compute);
-                    //t.Start();
+                    this.clickingIsLocked = true;
+                    Thread t = new Thread(compute);
+                    t.Start();
                 }
 
                 if (hitGameObject.tag == "Pipes")
-                {   
-                    if (this.selectedNode != null) {
+                {
+                    if (this.selectedNode != null)
+                    {
                         this.selectedNode.unselect();
                     }
 
@@ -165,9 +169,9 @@ public class Main : MonoBehaviour
                     if (isValveOpen)
                     {
 
-                        // this.clickingIsLocked = true;
-                        //Thread t = new Thread(compute);
-                        //t.Start();
+                        this.clickingIsLocked = true;
+                        Thread t = new Thread(compute);
+                        t.Start();
                     }
                 }
 
@@ -176,173 +180,110 @@ public class Main : MonoBehaviour
         }
     }
 
-    //private void compute()
-    //{
-    //    Debug.Log("Computation started.");
-    //    checkPath();
-    //    Debug.Log("Computation finished.");
+    private void compute()
+    {
+        Debug.Log("Computation started.");
+        checkPath();
+        Debug.Log("Computation finished.");
 
-    //}
-
-
-    //void checkPath()
-    //{
-
-    //    bool[,] visited = new bool[this.mapSize, this.mapSize];
-
-    //    bool result = DFSUtil(0, 0, visited);
-
-    //    this.lastVisited = visited;
-    //    this.colorThePipesInNextFrame = true;
-
-    //    Debug.Log("vysledok prehladavania: " + result);
+    }
 
 
-    //}
+    void checkPath()
+    {
 
-    //void ColorThePipes()
-    //{
-    //    for (var i = 0; i < this.lastVisited.GetLength(0); i++)
-    //    {
-    //        for (var j = 0; j < this.lastVisited.GetLength(1); j++)
-    //        {
-    //            if (this.lastVisited[i, j])
-    //            {
-    //                if (this.isValveOpen)
-    //                {
-    //                    this.nodes[i, j].setBlueMaterial();
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+        bool[,,] visited = new bool[this.mapHeight, this.mapRows, this.mapCols];
 
-    //bool DFSUtil(int i, int j, bool[,] visited)
-    //{
+        bool result = DFSUtil(0, 0, 0,visited);
 
-    //    visited[i, j] = true;
-    //    //Debug.Log("visited: (" + i + ", " + j + ")");
+        this.lastVisited = visited;
+        this.colorThePipesInNextFrame = true;
 
-    //    if ((i == (mapSize - 1)) && (j == (mapSize - 1)))
-    //    {
-    //        return true;
-    //    }
+        Debug.Log("vysledok prehladavania: " + result);
 
 
+    }
 
-    //    List<List<int>> neighbours = getNeighbours(i, j);
+    void ColorThePipes()
+    {
+        for (var i = 0; i < this.mapHeight; i++)
+        {
+            for (var j = 0; j < this.mapRows; j++)
+            {
+                for (var k = 0; k < this.mapCols; k++)
+                {
+                    if (this.lastVisited[i, j, k])
+                    {
+                        if (this.isValveOpen)
+                        {
+                            this.nodes[i, j, k].setBlueMaterial();
+                        }
+                    }
+                }
 
-    //    foreach (var n in neighbours)
-    //    {
-    //        int neighbour_i = n[0];
-    //        int neighbour_j = n[1];
+            }
+        }
+    }
 
-    //        if (visited[neighbour_i, neighbour_j] == false)
-    //        {
-    //            bool result = DFSUtil(neighbour_i, neighbour_j, visited);
-    //            if (result == true)
-    //            {
-    //                return true;
-    //            }
-    //        }
-    //    }
+    bool DFSUtil(int i, int j, int k, bool[,,] visited)
+    {
+
+        visited[i, j, k] = true;
+        //Debug.Log("visited: (" + i + ", " + j + ")");
+
+        if ((i == (mapHeight - 1)) && (j == (mapRows - 1)) && (k == (mapCols - 1)))
+        {
+            return true;
+        }
 
 
 
-    //    return false;
-    //}
+        HashSet<Vector3> neighbours = nodes[i, j, k].neighbours;
 
-    //Orientations getAdjacentOrientation(Orientations originOrientantion)
-    //{
-    //    switch (originOrientantion)
-    //    {
-    //        case Orientations.West:
-    //            return Orientations.East;
-    //        case Orientations.East:
-    //            return Orientations.West;
-    //        case Orientations.North:
-    //            return Orientations.South;
-    //        case Orientations.South:
-    //            return Orientations.North;
-    //        case Orientations.Up:
-    //            return Orientations.Down;
-    //        case Orientations.Down:
-    //            return Orientations.Up;
-    //        default:
-    //            Debug.Log("Unknown orientation");
-    //            return Orientations.North;
-    //    }
-    //}
+        foreach (var n in neighbours)
+        {
+            int neighbour_i = Convert.ToInt32(n[0]);
+            int neighbour_j = Convert.ToInt32(n[1]);
+            int neighbour_k = Convert.ToInt32(n[2]);
 
-    //List<List<int>> getNeighbours(int i, int j)
-    //{
-    //    List<List<int>> neighbours = new List<List<int>>();
+            if (visited[neighbour_i, neighbour_j, neighbour_k] == false)
+            {
+                bool result = DFSUtil(neighbour_i, neighbour_j, neighbour_k, visited);
+                if (result == true)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void resetWaterFlow()
+    {
+        for (int i = 0; i < this.mapHeight; i++)
+        {
+            for (int j = 0; j < this.mapRows; j++)
+            {
+                for (int k = 0; k < this.mapCols; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0)
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setBlueMaterial();
+                    }
+                    else if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setOutputMaterial();
+                    }
+                    else
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setWhiteMaterial();
+                    }
+                }
 
 
-    //    Node actualNode = this.nodes[i, j];
-
-    //    if (j - 1 >= 0)
-    //    {
-    //        Node westNeighbour = this.nodes[i, j - 1];
-    //        if (actualNode.orientation.Contains(Orientations.West) && westNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.West)))
-    //        {
-    //            neighbours.Add(new List<int> { i, j - 1 });
-    //        }
-    //    }
-
-
-    //    if (j + 1 < this.mapSize)
-    //    {
-    //        Node eastNeighbour = this.nodes[i, j + 1];
-    //        if (actualNode.orientation.Contains(Orientations.East) && eastNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.East)))
-    //        {
-    //            neighbours.Add(new List<int> { i, j + 1 });
-    //        }
-    //    }
-
-    //    if (i + 1 < this.mapSize)
-    //    {
-    //        Node southNeighbour = this.nodes[i + 1, j];
-    //        if (actualNode.orientation.Contains(Orientations.South) && southNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.South)))
-    //        {
-    //            neighbours.Add(new List<int> { i + 1, j });
-    //        }
-    //    }
-
-    //    if (i - 1 >= 0)
-    //    {
-    //        Node northNeighbour = this.nodes[i - 1, j];
-    //        if (actualNode.orientation.Contains(Orientations.North) && northNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.North)))
-    //        {
-    //            neighbours.Add(new List<int> { i - 1, j });
-    //        }
-    //    }
-
-    //    return neighbours;
-    //}
-
-    //void resetWaterFlow()
-    //{
-    //    for (int i = 0; i < this.map.Length; i++)
-    //    {
-    //        var rowLength = this.map[i].Split(" ").Length;
-    //        for (int j = 0; j < rowLength; j++)
-    //        {
-
-    //            if (i == 0 && j == 0)
-    //            {
-    //                this.nodes[i, j].GetComponent<Node>().setBlueMaterial();
-    //            }
-    //            else if (i == this.map.Length - 1 && j == rowLength - 1)
-    //            {
-    //                this.nodes[i, j].GetComponent<Node>().setOutputMaterial();
-    //            }
-    //            else
-    //            {
-    //                this.nodes[i, j].GetComponent<Node>().setWhiteMaterial();
-    //            }
-    //        }
-    //    }
-    //}
+            }
+        }
+    }
 
 }

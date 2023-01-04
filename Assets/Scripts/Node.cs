@@ -8,6 +8,7 @@ using static Main;
 public class Node : MonoBehaviour
 {
 
+    public HashSet<Vector3> neighbours = new HashSet<Vector3>();
     public List<Orientations> orientation;
     public String pipeType;
     public int i;
@@ -41,6 +42,7 @@ public class Node : MonoBehaviour
 
     public void setBlueMaterial()
     {
+        print("coloring pipes");
        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
     }
 
@@ -125,6 +127,7 @@ public class Node : MonoBehaviour
     public void rotateZ()
     { 
         transform.Rotate(new Vector3(0, 0, 90.0f));
+
     }
 
     public void turnAroundYAxis()
@@ -150,5 +153,7 @@ public class Node : MonoBehaviour
     {
         return Vector3.Distance(Camera.main.transform.position, transform.position);
     }
+
+   
 }
 
