@@ -147,11 +147,19 @@ public class Main : MonoBehaviour
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
 
-                    doCompute();
+                    if (isValveOpen) {
+                        doCompute();
+                    }
+                    else {
+                        resetWaterFlow();
+                    }
                 }
 
                 if (hitGameObject.tag == "Pipes")
                 {
+                    if (isValveOpen) {
+                        return;
+                    }
                     if (this.selectedNode != null)
                     {
                         this.selectedNode.unselect();
@@ -164,13 +172,6 @@ public class Main : MonoBehaviour
                         this.selectedNode = clickedNode;
                     }
 
-                    // if (isValveOpen)
-                    // {
-
-                    //     this.clickingIsLocked = true;
-                    //     Thread t = new Thread(compute);
-                    //     t.Start();
-                    // }
                 }
 
             }
@@ -189,6 +190,7 @@ public class Main : MonoBehaviour
 
         if (isValveOpen)
         {
+            setAllNeighbours();
             this.clickingIsLocked = true;
             Thread t = new Thread(compute);
             t.Start();
@@ -252,7 +254,7 @@ public class Main : MonoBehaviour
             return true;
         }
 
-        HashSet<Vector3> neighbours = nodes[i, j, k].neighbours;
+        List<Vector3> neighbours = nodes[i, j, k].neighbours;
 
         foreach (var n in neighbours)
         {
@@ -296,6 +298,21 @@ public class Main : MonoBehaviour
                 }
 
 
+            }
+        }
+    }
+
+    private void setAllNeighbours()
+    {
+        for (int i = 0; i < this.mapHeight; i++)
+        {
+            for (int j = 0; j < this.mapRows; j++)
+            {
+                for (int k = 0; k < this.mapCols; k++)
+                {
+                   List<Vector3> nodeNeighbours = nodes[i, j, k].getNeighbours();
+                   nodes[i, j, k].neighbours = nodeNeighbours;
+                }
             }
         }
     }

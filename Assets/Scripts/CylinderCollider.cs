@@ -4,41 +4,23 @@ using UnityEngine;
 
 public class CylinderCollider : MonoBehaviour
 {
+     private List<Collider> colliders = new List<Collider>();
+     public List<Collider> GetColliders () { return colliders; }
+
      void OnTriggerEnter(Collider collider)
     {
-
-        Node parent = transform.parent.gameObject.GetComponent<Node>();
-        Node otherParent = collider.transform.parent.gameObject.GetComponent<Node>();
-
-        if (collider.gameObject.tag == "Stupel")
+        if (collider.transform.tag == "Stupel")
         {
-            print($"trigger enter {parent.i}, {parent.j}, {parent.k}");
-
-            parent.neighbours.Add(new Vector3(otherParent.i, otherParent.j, otherParent.k));
-        } 
+            if (!colliders.Contains(collider)) { colliders.Add(collider); }
+        }
     }
 
 
     void OnTriggerExit(Collider collider)
     {
-        if (collider.gameObject.tag == "Stupel")
-        {
-
-            Node parent = transform.parent.gameObject.GetComponent<Node>();
-            Node otherParent = collider.transform.parent.gameObject.GetComponent<Node>();
-            print($"trigger exit {parent.i}, {parent.j}, {parent.k}");
-            
-
-            // parent.neighbours.Dequeue();
-        }
+        colliders.Remove(collider);
     }
 
-    // void OnTriggerStay(Collider collider)
-    // {
-    //     if (collider.gameObject.tag == "Stupel")
-    //     {
 
-    //     }
-    // }
 
 }

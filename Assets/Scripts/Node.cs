@@ -8,8 +8,7 @@ using static Main;
 public class Node : MonoBehaviour
 {
 
-    public HashSet<Vector3> neighbours = new HashSet<Vector3>();
-
+    public List<Vector3> neighbours = new List<Vector3>();
     public List<Orientations> orientation;
     public String pipeType;
     public int i;
@@ -19,6 +18,8 @@ public class Node : MonoBehaviour
     public Material blueMaterial;
     public Material whiteMaterial;
     public Material outputMaterial;
+    public Material yellowMaterial;
+    public Material transparentMaterial;
 
     private Color pipeColor;
 
@@ -43,7 +44,6 @@ public class Node : MonoBehaviour
 
     public void setBlueMaterial()
     {
-        print("coloring pipes");
        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
     }
 
@@ -57,68 +57,45 @@ public class Node : MonoBehaviour
        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
     }
 
+    public void setYellowMaterial()
+    {
+        transform.gameObject.GetComponent<Renderer>().material = yellowMaterial;
+    }
+
+    public void setTransparentMaterial()
+    {
+        transform.gameObject.GetComponent<Renderer>().material = transparentMaterial;
+    }
     public void select()
     {   
         this.isSelected = true;
-        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
-
-        foreach (var n in neighbours)
-        {
-            print(n);
-        }
-        print("==========");
+        setYellowMaterial();
     }
 
     public void unselect()
     {
         this.isSelected = false;
-        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = whiteMaterial;
+        setTransparentMaterial();
     }
 
-    public Orientations getNewDirection(Orientations originOrientation, bool turnAroundYAxis)
+    public List<Vector3> getNeighbours()
     {
-        if (turnAroundYAxis)
+        List<Collider> nA = transform.GetChild(1).gameObject.GetComponent<CylinderCollider>().GetColliders();
+        List<Collider> nB = transform.GetChild(2).gameObject.GetComponent<CylinderCollider>().GetColliders();
+
+        List<Vector3> neighbours = new List<Vector3>();
+        foreach(Collider collider in nA)
         {
-            switch (originOrientation)
-            {
-                case Orientations.North:
-                    return Orientations.East;
-                case Orientations.East:
-                    return Orientations.South;
-                case Orientations.South:
-                    return Orientations.West;
-                case Orientations.West:
-                    return Orientations.North;
-                case Orientations.Up:
-                    return Orientations.Up;
-                case Orientations.Down:
-                    return Orientations.Down;
-                default:
-                    Debug.Log("Unknown orientation");
-                    return Orientations.North;
-            }
+            Node parentNode = collider.transform.parent.gameObject.GetComponent<Node>();
+            neighbours.Add(new Vector3(parentNode.i, parentNode.j, parentNode.k));
         }
-        else
+        foreach(Collider collider in nB)
         {
-            switch (originOrientation)
-            {
-                case Orientations.North:
-                    return Orientations.Up;
-                case Orientations.Up:
-                    return Orientations.South;
-                case Orientations.South:
-                    return Orientations.Down;
-                case Orientations.Down:
-                    return Orientations.North;
-                case Orientations.East:
-                    return Orientations.East;
-                case Orientations.West:
-                    return Orientations.West;
-                default:
-                    Debug.Log("Unknown orientation");
-                    return Orientations.North;
-            }
+            Node parentNode = collider.transform.parent.gameObject.GetComponent<Node>();
+            neighbours.Add(new Vector3(parentNode.i, parentNode.j, parentNode.k));
         }
+
+        return neighbours;
     }
 
     public void rotateX()
@@ -135,25 +112,6 @@ public class Node : MonoBehaviour
     { 
         transform.Rotate(new Vector3(0, 0, 90.0f));
 
-    }
-
-    public void turnAroundYAxis()
-    {
-        // Debug.Log("old orientation: " + this.orientation[0] + ", " + this.orientation[1]);
-        this.orientation = new List<Orientations>() {
-                        getNewDirection(this.orientation[0],true),
-                        getNewDirection(this.orientation[1],true),
-                        };
-        Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
-    }
-
-    public void turnAroundXAxis()
-    {
-        this.orientation = new List<Orientations>() {
-                        getNewDirection(this.orientation[0],false),
-                        getNewDirection(this.orientation[1],false),
-                        };
-        Debug.Log("new orientation: " + this.orientation[0] + ", " + this.orientation[1]);
     }
 
     public float getDistanceFromCamera()
