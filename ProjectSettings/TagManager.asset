@@ -8,6 +8,8 @@ TagManager:
   - UI
   - Valve
   - Stupel
+  - StupelA
+  - StupelB
   layers:
   - Default
   - TransparentFX

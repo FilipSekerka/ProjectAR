@@ -9,6 +9,7 @@ public class Node : MonoBehaviour
 {
 
     public HashSet<Vector3> neighbours = new HashSet<Vector3>();
+
     public List<Orientations> orientation;
     public String pipeType;
     public int i;
@@ -60,6 +61,12 @@ public class Node : MonoBehaviour
     {   
         this.isSelected = true;
         transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
+
+        foreach (var n in neighbours)
+        {
+            print(n);
+        }
+        print("==========");
     }
 
     public void unselect()

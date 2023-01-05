@@ -101,6 +101,7 @@ public class Main : MonoBehaviour
         resetWaterFlow();
     }
 
+
     void Update()
     {
 
@@ -141,15 +142,12 @@ public class Main : MonoBehaviour
                 RaycastHit hit = activeHits.First();
                 GameObject hitGameObject = hit.transform.gameObject;
 
-                resetWaterFlow();
                 if (hitGameObject.tag == "Valve")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
 
-                    this.clickingIsLocked = true;
-                    Thread t = new Thread(compute);
-                    t.Start();
+                    doCompute();
                 }
 
                 if (hitGameObject.tag == "Pipes")
@@ -166,18 +164,36 @@ public class Main : MonoBehaviour
                         this.selectedNode = clickedNode;
                     }
 
-                    if (isValveOpen)
-                    {
+                    // if (isValveOpen)
+                    // {
 
-                        this.clickingIsLocked = true;
-                        Thread t = new Thread(compute);
-                        t.Start();
-                    }
+                    //     this.clickingIsLocked = true;
+                    //     Thread t = new Thread(compute);
+                    //     t.Start();
+                    // }
                 }
 
             }
 
         }
+    }
+
+    public void doCompute() 
+    {
+        if (this.clickingIsLocked)
+        {
+            print("CLICKING IS LOCKED");
+            return;
+        }
+        resetWaterFlow();
+
+        if (isValveOpen)
+        {
+            this.clickingIsLocked = true;
+            Thread t = new Thread(compute);
+            t.Start();
+        }
+        
     }
 
     private void compute()
@@ -235,8 +251,6 @@ public class Main : MonoBehaviour
         {
             return true;
         }
-
-
 
         HashSet<Vector3> neighbours = nodes[i, j, k].neighbours;
 

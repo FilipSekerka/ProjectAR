@@ -6,14 +6,16 @@ public class CylinderCollider : MonoBehaviour
 {
      void OnTriggerEnter(Collider collider)
     {
+
+        Node parent = transform.parent.gameObject.GetComponent<Node>();
+        Node otherParent = collider.transform.parent.gameObject.GetComponent<Node>();
+
         if (collider.gameObject.tag == "Stupel")
         {
-            Node parent = transform.parent.gameObject.GetComponent<Node>();
-            Node otherParent = collider.transform.parent.gameObject.GetComponent<Node>();
+            print($"trigger enter {parent.i}, {parent.j}, {parent.k}");
 
-            // nastavis zoznam susedov
             parent.neighbours.Add(new Vector3(otherParent.i, otherParent.j, otherParent.k));
-        }
+        } 
     }
 
 
@@ -21,11 +23,22 @@ public class CylinderCollider : MonoBehaviour
     {
         if (collider.gameObject.tag == "Stupel")
         {
+
             Node parent = transform.parent.gameObject.GetComponent<Node>();
             Node otherParent = collider.transform.parent.gameObject.GetComponent<Node>();
+            print($"trigger exit {parent.i}, {parent.j}, {parent.k}");
             
-            // parent.neighbours.Remove
-            parent.neighbours.RemoveWhere(n => n[0] == otherParent.i && n[1] == otherParent.j && n[2] == otherParent.k);
+
+            // parent.neighbours.Dequeue();
         }
     }
+
+    // void OnTriggerStay(Collider collider)
+    // {
+    //     if (collider.gameObject.tag == "Stupel")
+    //     {
+
+    //     }
+    // }
+
 }

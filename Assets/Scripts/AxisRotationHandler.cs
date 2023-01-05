@@ -12,21 +12,22 @@ public class AxisRotationHandler : MonoBehaviour
     
     public void rotateX() 
     {
+        Main.Instance.selectedNode.neighbours = new HashSet<Vector3>();
         Main.Instance.selectedNode.rotateX();
+        Main.Instance.doCompute();
     }
 
     public void rotateY() 
     {
+        Main.Instance.selectedNode.neighbours = new HashSet<Vector3>();
         Main.Instance.selectedNode.rotateY();
+        Main.Instance.doCompute();
     }
 
     public void rotateZ() 
     {
+        Main.Instance.selectedNode.neighbours = new HashSet<Vector3>();
         Main.Instance.selectedNode.rotateZ();
-       
-    }
-
-    public void handle(Dropdown change) {
-        return;
+        Main.Instance.doCompute();
     }
 }
