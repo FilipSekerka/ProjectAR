@@ -234,7 +234,7 @@ public class Main : MonoBehaviour
                     {
                         if (this.isValveOpen)
                         {
-                            this.nodes[i, j, k].setBlueMaterial();
+                            this.nodes[i, j, k].setWaterMaterial();
                         }
                     }
                 }
@@ -283,11 +283,12 @@ public class Main : MonoBehaviour
             {
                 for (int k = 0; k < this.mapCols; k++)
                 {
-                    if (i == 0 && j == 0 && k == 0)
-                    {
-                        this.nodes[i, j, k].GetComponent<Node>().setBlueMaterial();
-                    }
-                    else if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
+                    // if (i == 0 && j == 0 && k == 0)
+                    // {
+                    //     this.nodes[i, j, k].GetComponent<Node>().setWaterMaterial();
+                    // }
+                    // else
+                     if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
                     {
                         this.nodes[i, j, k].GetComponent<Node>().setOutputMaterial();
                     }

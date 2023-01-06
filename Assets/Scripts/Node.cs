@@ -15,10 +15,10 @@ public class Node : MonoBehaviour
     public int j;
     public int k;
 
-    public Material blueMaterial;
+    public Material waterMaterial;
     public Material whiteMaterial;
     public Material outputMaterial;
-    public Material yellowMaterial;
+    public Material selectedMaterial;
     public Material transparentMaterial;
 
     private Color pipeColor;
@@ -42,9 +42,9 @@ public class Node : MonoBehaviour
         transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material.color = pipeColor;
     }
 
-    public void setBlueMaterial()
+    public void setWaterMaterial()
     {
-       transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = blueMaterial;
+       transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = waterMaterial;
     }
 
     public void setWhiteMaterial()
@@ -57,9 +57,9 @@ public class Node : MonoBehaviour
        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = outputMaterial;
     }
 
-    public void setYellowMaterial()
+    public void setSelectedMaterial()
     {
-        transform.gameObject.GetComponent<Renderer>().material = yellowMaterial;
+        transform.GetChild(0).gameObject.transform.GetChild(0).GetComponent<Renderer>().material = selectedMaterial;
     }
 
     public void setTransparentMaterial()
@@ -69,13 +69,13 @@ public class Node : MonoBehaviour
     public void select()
     {   
         this.isSelected = true;
-        setYellowMaterial();
+        setSelectedMaterial();
     }
 
     public void unselect()
     {
         this.isSelected = false;
-        setTransparentMaterial();
+        setWhiteMaterial();
     }
 
     public List<Vector3> getNeighbours()
