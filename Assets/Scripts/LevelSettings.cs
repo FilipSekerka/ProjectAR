@@ -39,33 +39,30 @@ public class LevelSettings : MonoBehaviour
     public List<List<List<string[]>>> loadMaps()
     {
         maps = new List<List<List<string[]>>>();
-        string[] fileEntries = Directory.GetFiles("./Assets/Resources/");
-        Array.Sort(fileEntries, (x,y) => String.Compare(x, y));
+        var fileEntries = Resources.LoadAll("Maps");
         
-        foreach(string fileEntry in fileEntries) 
+        foreach(var fileEntry in fileEntries) 
         {
-            
-            if (fileEntry.EndsWith(".txt"))
-            {
-                print(fileEntry);
-                List<List<string[]>> map = new List<List<string[]>>();
-                List<string[]> floor = new List<string[]>();
+            TextAsset mapContents = Resources.Load<TextAsset>($"Maps/{fileEntry.name}");
+            string[] mapLines = mapContents.text.Split("\n");
 
-                foreach (string line in System.IO.File.ReadLines(fileEntry))
-                {  
-                    string[] row = line.Split(" ");
-                   
-                    if (row.GetValue(0).ToString() != ";")
-                    {
-                        floor.Add(row);
-                    } else {
-                        map.Add(floor);
-                        floor = new List<string[]>();
-                    }
-                }  
+            List<List<string[]>> map = new List<List<string[]>>();
+            List<string[]> floor = new List<string[]>();
 
-                maps.Add(map);
-            }
+            foreach (string line in mapLines)
+            {  
+                string[] row = line.Split(" ");
+                
+                if (row.GetValue(0).ToString() != ";")
+                {
+                    floor.Add(row);
+                } else {
+                    map.Add(floor);
+                    floor = new List<string[]>();
+                }
+            }  
+
+            maps.Add(map);
         }
         return maps;
     }

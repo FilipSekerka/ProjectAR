@@ -41,7 +41,7 @@ public class UIController : MonoBehaviour
             var iCopy = i;
             button.GetComponent<Button>().onClick.AddListener(delegate{goToLevel(iCopy);});
 
-            button.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"Level {i}";
+            button.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"Level {i + 1}";
         }
     }
     public void onToggleClicked()

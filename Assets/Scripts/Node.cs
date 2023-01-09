@@ -9,8 +9,6 @@ public class Node : MonoBehaviour
 {
 
     public List<Vector3> neighbours = new List<Vector3>();
-    public List<Orientations> orientation;
-    public String pipeType;
     public int i;
     public int j;
     public int k;
@@ -101,6 +99,7 @@ public class Node : MonoBehaviour
     public void rotateX()
     { 
         transform.Rotate(new Vector3(90.0f, 0, 0));
+        
     }
 
     public void rotateY()
@@ -119,6 +118,10 @@ public class Node : MonoBehaviour
         return Vector3.Distance(Camera.main.transform.position, transform.position);
     }
 
-   
+    public void setGravity()
+    {
+        transform.gameObject.GetComponent<Rigidbody>().useGravity = true;
+        transform.gameObject.GetComponent<Rigidbody>().isKinematic = false;
+    }
 }
 

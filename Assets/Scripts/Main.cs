@@ -56,6 +56,7 @@ public class Main : MonoBehaviour
     private int mapHeight = 0;
     private int mapRows = 0;
     private int mapCols = 0;
+    private bool isGameover = false;
 
     void Start()
     {
@@ -63,7 +64,6 @@ public class Main : MonoBehaviour
         this.mapHeight = this.map.Count;
         this.mapRows = this.map[0].Count;
         this.mapCols = this.map[0][0].Length;
-        print($"{this.mapHeight}, {this.mapRows}, {this.mapCols}");
         this.nodes = new Node[this.mapHeight, this.mapRows, this.mapCols];
 
 
@@ -74,19 +74,20 @@ public class Main : MonoBehaviour
                 for (int k = 0; k < this.mapCols; k++)
                 {
                     string pipeType = map[i][j][k];
-
-                    GameObject newObject = Instantiate((pipeType == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
-                    newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
-
+                    
+                    GameObject newObject = null;
                     if (pipeType == "-")
                     {
-                        newObject.GetComponent<Node>().orientation = new List<Orientations>() { Orientations.West, Orientations.East };
-                        newObject.GetComponent<Node>().pipeType = "-";
+                        newObject = Instantiate(linearPipePrefab, marker.transform);
+                        newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
                     }
                     else if (pipeType == "+")
                     {
-                        newObject.GetComponent<Node>().orientation = new List<Orientations>() { Orientations.East, Orientations.South };
-                        newObject.GetComponent<Node>().pipeType = "+";
+                        newObject = Instantiate(bendPipePrefab, marker.transform);
+                        newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
+                    } else if (pipeType == "?") 
+                    {
+                        continue;
                     }
 
                     newObject.GetComponent<Node>().i = i;
@@ -121,7 +122,7 @@ public class Main : MonoBehaviour
                 return;
             }
 
-            if (EventSystem.current.IsPointerOverGameObject())
+            if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
             {
                 return;
             }
@@ -132,13 +133,21 @@ public class Main : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
             hits = Physics.RaycastAll(ray.origin, ray.direction.normalized, 100.0F);
-            print(hits[0].transform.childCount);
-            print(hits.Length);
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.transform.gameObject.tag ==  "UI")
+                {
+                    return;
+                }
+            }
+            
             RaycastHit[] activeHits = Array.FindAll(hits, hit => hit.transform.GetChild(0).gameObject.activeSelf);
             activeHits.OrderByDescending(hit => hit.transform.gameObject.GetComponent<Node>().getDistanceFromCamera());
             if (activeHits.Length > 0)
             {
 
+               
                 RaycastHit hit = activeHits.First();
                 GameObject hitGameObject = hit.transform.gameObject;
 
@@ -183,7 +192,6 @@ public class Main : MonoBehaviour
     {
         if (this.clickingIsLocked)
         {
-            print("CLICKING IS LOCKED");
             return;
         }
         resetWaterFlow();
@@ -200,9 +208,7 @@ public class Main : MonoBehaviour
 
     private void compute()
     {
-        Debug.Log("Computation started.");
         checkPath();
-        Debug.Log("Computation finished.");
 
     }
 
@@ -214,12 +220,9 @@ public class Main : MonoBehaviour
 
         bool result = DFSUtil(0, 0, 0,visited);
 
+        this.isGameover = result;
         this.lastVisited = visited;
         this.colorThePipesInNextFrame = true;
-
-        Debug.Log("vysledok prehladavania: " + result);
-
-
     }
 
     void ColorThePipes()
@@ -230,12 +233,19 @@ public class Main : MonoBehaviour
             {
                 for (var k = 0; k < this.mapCols; k++)
                 {
+                    if (nodes[i, j, k] == null)
+                    {
+                        continue;
+                    }
                     if (this.lastVisited[i, j, k])
                     {
                         if (this.isValveOpen)
                         {
                             this.nodes[i, j, k].setWaterMaterial();
                         }
+                    } else if (this.isGameover)
+                    {
+                        this.nodes[i,j,k].setGravity();
                     }
                 }
 
@@ -247,7 +257,6 @@ public class Main : MonoBehaviour
     {
 
         visited[i, j, k] = true;
-        //Debug.Log("visited: (" + i + ", " + j + ")");
 
         if ((i == (mapHeight - 1)) && (j == (mapRows - 1)) && (k == (mapCols - 1)))
         {
@@ -283,12 +292,15 @@ public class Main : MonoBehaviour
             {
                 for (int k = 0; k < this.mapCols; k++)
                 {
-                    // if (i == 0 && j == 0 && k == 0)
-                    // {
-                    //     this.nodes[i, j, k].GetComponent<Node>().setWaterMaterial();
-                    // }
-                    // else
-                     if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
+                    if (nodes[i, j, k] == null)
+                    {
+                        continue;
+                    }
+                    if (this.selectedNode != null && i == this.selectedNode.i && j == this.selectedNode.j && k == this.selectedNode.k)
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setSelectedMaterial();
+                    }
+                    else if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
                     {
                         this.nodes[i, j, k].GetComponent<Node>().setOutputMaterial();
                     }
@@ -311,8 +323,12 @@ public class Main : MonoBehaviour
             {
                 for (int k = 0; k < this.mapCols; k++)
                 {
-                   List<Vector3> nodeNeighbours = nodes[i, j, k].getNeighbours();
-                   nodes[i, j, k].neighbours = nodeNeighbours;
+                    if (nodes[i,j,k] != null) 
+                    {
+                        List<Vector3> nodeNeighbours = nodes[i, j, k].getNeighbours();
+                        nodes[i, j, k].neighbours = nodeNeighbours;
+                    }
+                   
                 }
             }
         }
