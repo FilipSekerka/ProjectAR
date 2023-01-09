@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Pipes
   - UI
+  - Valve
+  - Stupel
+  - StupelA
+  - StupelB
   layers:
   - Default
   - TransparentFX

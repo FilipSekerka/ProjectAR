@@ -3,9 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Threading;
+using UnityEngine.EventSystems;
+using System.Linq;
 
 public class Main : MonoBehaviour
 {
+
+
+    public static Main Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        //DontDestroyOnLoad(gameObject);
+    }
+
 
     public GameObject marker;
     public GameObject linearPipePrefab;
@@ -13,9 +33,9 @@ public class Main : MonoBehaviour
 
     public float cubeSize = 0.025f;
 
-    public int mapSize;
-    public Node[,] nodes;
+    public Node[,,] nodes;
 
+    public Node selectedNode = null;
 
     public enum Orientations
     {
@@ -28,70 +48,55 @@ public class Main : MonoBehaviour
     }
 
     private bool isValveOpen = false;
-    private string[] map;
+    private List<List<string[]>> map;
+    private bool clickingIsLocked = false;
+    private bool[,,] lastVisited = new bool[1, 1, 1];
+    private bool colorThePipesInNextFrame = false;
+
+    private int mapHeight = 0;
+    private int mapRows = 0;
+    private int mapCols = 0;
+    private bool isGameover = false;
 
     void Start()
     {
-        /* string file = "Assets/Maps/map.txt";
-
-         if (File.Exists(file))
-         {
-             Debug.Log("MFile exists.");
-         }
-         else
-         {
-             Debug.Log("File does not exist.");
-         }
-
-         string[] map = File.ReadAllLines(file);
-        */
-
-        //string[] map = {"- - - - - - +",
-        //                "- + - + + - -",
-        //                "- - - + - - -",
-        //                "- - - - - - -",
-        //                "- + - - - + -",
-        //                "- - - - + - -",
-        //                "- - - + + - +"};
-
-        string[] map = {"- + - +",
-                        "- - - -",
-                        "- - - -",
-                        "- + - -"};
-
-        float offset = (map.Length * cubeSize) / 2.0f;
-
-        this.map = map;
-        this.mapSize = map.Length;
-
-        this.nodes = new Node[map.Length, map.Length];
+        this.map = LevelSettings.Instance.getMap();
+        this.mapHeight = this.map.Count;
+        this.mapRows = this.map[0].Count;
+        this.mapCols = this.map[0][0].Length;
+        this.nodes = new Node[this.mapHeight, this.mapRows, this.mapCols];
 
 
-        for (var i = 0; i < map.Length; i++)
-        {   
-            var rowLength = map[i].Split(" ").Length;
-
-            for (var j = 0; j < rowLength; j++)
+        for (int i = 0; i < this.mapHeight; i++)
+        {
+            for (int j = 0; j < this.mapRows; j++)
             {
-                var pipeType = map[i].Split(" ")[j];
-                GameObject newObject = Instantiate((pipeType == "-") ? linearPipePrefab : bendPipePrefab, marker.transform);
-                newObject.transform.position = new Vector3((cubeSize * j), cubeSize / 2.0f, -(cubeSize * i));
-
-                if (pipeType == "-")
+                for (int k = 0; k < this.mapCols; k++)
                 {
-                    newObject.GetComponent<Node>().orientation = new List<Orientations>() { Orientations.West, Orientations.East };
-                    newObject.GetComponent<Node>().pipeType = "-";
-                }
-                else if (pipeType == "+")
-                {
-                    newObject.GetComponent<Node>().orientation = new List<Orientations>() { Orientations.East, Orientations.South };
-                    newObject.GetComponent<Node>().pipeType = "+";
-                }
+                    string pipeType = map[i][j][k];
+                    
+                    GameObject newObject = null;
+                    if (pipeType == "-")
+                    {
+                        newObject = Instantiate(linearPipePrefab, marker.transform);
+                        newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
+                    }
+                    else if (pipeType == "+")
+                    {
+                        newObject = Instantiate(bendPipePrefab, marker.transform);
+                        newObject.transform.position = new Vector3((cubeSize * k), (cubeSize * i) + (cubeSize / 2.0f), -(cubeSize * j));
+                    } else if (pipeType == "?") 
+                    {
+                        continue;
+                    }
 
-                newObject.GetComponent<Node>().i = i;
-                newObject.GetComponent<Node>().j = j;
-                nodes[i, j] = newObject.GetComponent<Node>();
+                    newObject.GetComponent<Node>().i = i;
+                    newObject.GetComponent<Node>().j = j;
+                    newObject.GetComponent<Node>().k = k;
+                    nodes[i, j, k] = newObject.GetComponent<Node>();
+                }
             }
+
         }
 
         resetWaterFlow();
@@ -101,94 +106,174 @@ public class Main : MonoBehaviour
     void Update()
     {
 
-        //otacanie
+        if (this.colorThePipesInNextFrame)
+        {
+            ColorThePipes();
+            this.colorThePipesInNextFrame = false;
+            this.clickingIsLocked = false;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
 
-            RaycastHit hit;
+            if (this.clickingIsLocked)
+            {
+                Debug.Log("Background computation in progress");
+                return;
+            }
+
+            if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+            {
+                return;
+            }
+
+
+            RaycastHit[] hits;
             Camera cam = Camera.main;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-            bool wasHit = Physics.Raycast(ray.origin, ray.direction.normalized, out hit);
+            hits = Physics.RaycastAll(ray.origin, ray.direction.normalized, 100.0F);
 
-            if (wasHit)
+            foreach (RaycastHit hit in hits)
             {
+                if (hit.transform.gameObject.tag ==  "UI")
+                {
+                    return;
+                }
+            }
+            
+            RaycastHit[] activeHits = Array.FindAll(hits, hit => hit.transform.GetChild(0).gameObject.activeSelf);
+            activeHits.OrderByDescending(hit => hit.transform.gameObject.GetComponent<Node>().getDistanceFromCamera());
+            if (activeHits.Length > 0)
+            {
+
+               
+                RaycastHit hit = activeHits.First();
                 GameObject hitGameObject = hit.transform.gameObject;
 
-                resetWaterFlow();
-                if (hitGameObject.tag == "UI")
+                if (hitGameObject.tag == "Valve")
                 {
                     hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
                     isValveOpen = !isValveOpen;
-                    
-                    checkPath();
-                }
 
-                if (hitGameObject.tag == "Pipes")
-                {   
-                    hitGameObject.transform.Rotate(new Vector3(0, 90.0f, 0));
-                    hitGameObject.GetComponent<Node>().turnAroundYAxis();
-                    //Debug.Log("suradnice pipe-y: " + hitGameObject.GetComponent<Node>().i + ", " + hitGameObject.GetComponent<Node>().j);
                     if (isValveOpen) {
-                        checkPath();
+                        doCompute();
+                    }
+                    else {
+                        resetWaterFlow();
                     }
                 }
 
+                if (hitGameObject.tag == "Pipes")
+                {
+                    if (isValveOpen) {
+                        return;
+                    }
+                    if (this.selectedNode != null)
+                    {
+                        this.selectedNode.unselect();
+                    }
+
+                    Node clickedNode = hitGameObject.GetComponent<Node>();
+                    if (!clickedNode.isSelected)
+                    {
+                        clickedNode.select();
+                        this.selectedNode = clickedNode;
+                    }
+
+                }
 
             }
+
         }
+    }
+
+    public void doCompute() 
+    {
+        if (this.clickingIsLocked)
+        {
+            return;
+        }
+        resetWaterFlow();
+
+        if (isValveOpen)
+        {
+            setAllNeighbours();
+            this.clickingIsLocked = true;
+            Thread t = new Thread(compute);
+            t.Start();
+        }
+        
+    }
+
+    private void compute()
+    {
+        checkPath();
+
     }
 
 
     void checkPath()
     {
 
-        bool[,] visited = new bool[this.mapSize, this.mapSize];
+        bool[,,] visited = new bool[this.mapHeight, this.mapRows, this.mapCols];
 
-        bool result = DFSUtil(0, 0, visited);
+        bool result = DFSUtil(0, 0, 0,visited);
 
-        Debug.Log("vysledok prehladavania: " + result);
-
-        for (var i = 0; i < this.mapSize; i++)
-        {
-            for (var j = 0; j < this.mapSize; j++)
-            {
-                if (visited[i, j])
-                {   
-                    if (this.isValveOpen)
-                    {
-                        this.nodes[i, j].setBlueMaterial();
-                    }
-                }
-            }
-        }
-
-
+        this.isGameover = result;
+        this.lastVisited = visited;
+        this.colorThePipesInNextFrame = true;
     }
 
-    bool DFSUtil(int i, int j, bool[,] visited)
+    void ColorThePipes()
+    {
+        for (var i = 0; i < this.mapHeight; i++)
+        {
+            for (var j = 0; j < this.mapRows; j++)
+            {
+                for (var k = 0; k < this.mapCols; k++)
+                {
+                    if (nodes[i, j, k] == null)
+                    {
+                        continue;
+                    }
+                    if (this.lastVisited[i, j, k])
+                    {
+                        if (this.isValveOpen)
+                        {
+                            this.nodes[i, j, k].setWaterMaterial();
+                        }
+                    } else if (this.isGameover)
+                    {
+                        this.nodes[i,j,k].setGravity();
+                    }
+                }
+
+            }
+        }
+    }
+
+    bool DFSUtil(int i, int j, int k, bool[,,] visited)
     {
 
-        visited[i, j] = true;
-        Debug.Log("visited: (" + i + ", " + j + ")");
+        visited[i, j, k] = true;
 
-        if ((i == (mapSize - 1)) && (j == (mapSize - 1)))
+        if ((i == (mapHeight - 1)) && (j == (mapRows - 1)) && (k == (mapCols - 1)))
         {
             return true;
         }
 
-        
-
-        List<List<int>> neighbours = getNeighbours(i, j);
+        List<Vector3> neighbours = nodes[i, j, k].neighbours;
 
         foreach (var n in neighbours)
         {
-            int neighbour_i = n[0];
-            int neighbour_j = n[1];
+            int neighbour_i = Convert.ToInt32(n[0]);
+            int neighbour_j = Convert.ToInt32(n[1]);
+            int neighbour_k = Convert.ToInt32(n[2]);
 
-            if (visited[neighbour_i, neighbour_j] == false)
+            if (visited[neighbour_i, neighbour_j, neighbour_k] == false)
             {
-                bool result = DFSUtil(neighbour_i, neighbour_j, visited);
+                bool result = DFSUtil(neighbour_i, neighbour_j, neighbour_k, visited);
                 if (result == true)
                 {
                     return true;
@@ -196,97 +281,54 @@ public class Main : MonoBehaviour
             }
         }
 
-
-
         return false;
     }
 
-    Orientations getAdjacentOrientation(Orientations originOrientantion)
+    void resetWaterFlow()
     {
-        switch (originOrientantion)
+        for (int i = 0; i < this.mapHeight; i++)
         {
-            case Orientations.West:
-                return Orientations.East;
-            case Orientations.East:
-                return Orientations.West;
-            case Orientations.North:
-                return Orientations.South;
-            case Orientations.South:
-                return Orientations.North;
-            case Orientations.Up:
-                return Orientations.Down;
-            case Orientations.Down:
-                return Orientations.Up;
-            default:
-                Debug.Log("Unknown orientation");
-                return Orientations.North;
+            for (int j = 0; j < this.mapRows; j++)
+            {
+                for (int k = 0; k < this.mapCols; k++)
+                {
+                    if (nodes[i, j, k] == null)
+                    {
+                        continue;
+                    }
+                    if (this.selectedNode != null && i == this.selectedNode.i && j == this.selectedNode.j && k == this.selectedNode.k)
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setSelectedMaterial();
+                    }
+                    else if (i == this.mapHeight - 1 && j == this.mapRows - 1 && k == this.mapCols - 1)
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setOutputMaterial();
+                    }
+                    else
+                    {
+                        this.nodes[i, j, k].GetComponent<Node>().setWhiteMaterial();
+                    }
+                }
+
+
+            }
         }
     }
 
-    List<List<int>> getNeighbours(int i, int j)
+    private void setAllNeighbours()
     {
-        List<List<int>> neighbours = new List<List<int>>();
-
-
-        Node actualNode = this.nodes[i, j];
-
-        if (j - 1 >= 0)
+        for (int i = 0; i < this.mapHeight; i++)
         {
-            Node westNeighbour = this.nodes[i, j - 1];
-            if (actualNode.orientation.Contains(Orientations.West) && westNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.West)))
+            for (int j = 0; j < this.mapRows; j++)
             {
-                neighbours.Add(new List<int> { i, j - 1 });
-            }
-        }
-
-
-        if (j + 1 < this.mapSize)
-        {
-            Node eastNeighbour = this.nodes[i, j + 1];
-            if (actualNode.orientation.Contains(Orientations.East) && eastNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.East)))
-            {
-                neighbours.Add(new List<int> { i, j + 1 });
-            }
-        }
-
-        if (i + 1 < this.mapSize)
-        {
-            Node southNeighbour = this.nodes[i + 1, j];
-            if (actualNode.orientation.Contains(Orientations.South) && southNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.South)))
-            {
-                neighbours.Add(new List<int> { i + 1, j });
-            }
-        }
-
-        if (i - 1 >= 0)
-        {
-            Node northNeighbour = this.nodes[i - 1, j];
-            if (actualNode.orientation.Contains(Orientations.North) && northNeighbour.orientation.Contains(getAdjacentOrientation(Orientations.North)))
-            {
-                neighbours.Add(new List<int> { i - 1, j });
-            }
-        }
-
-        return neighbours;
-    }
-
-    void resetWaterFlow() 
-    {
-        for (int i = 0; i < this.map.Length; i++)
-        {
-            var rowLength = this.map[i].Split(" ").Length;
-            for (int j = 0; j < rowLength; j++)
-            {
-                
-                if (i == 0 && j == 0) 
+                for (int k = 0; k < this.mapCols; k++)
                 {
-                    this.nodes[i, j].GetComponent<Node>().setBlueMaterial();
-                } else if (i == this.map.Length - 1 && j == rowLength - 1)
-                {
-                    this.nodes[i, j].GetComponent<Node>().setOutputMaterial();
-                } else 
-                {
-                    this.nodes[i, j].GetComponent<Node>().setWhiteMaterial();
+                    if (nodes[i,j,k] != null) 
+                    {
+                        List<Vector3> nodeNeighbours = nodes[i, j, k].getNeighbours();
+                        nodes[i, j, k].neighbours = nodeNeighbours;
+                    }
+                   
                 }
             }
         }
